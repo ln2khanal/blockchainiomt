@@ -5,42 +5,45 @@
 //  Created by Lekh Nath Khanal on 10/02/2025.
 //
 
-import SwiftUI
+import Combine
+import HealthKit
 
-struct ContentView: View {
-    @State private var isRunning = false
-
-    var body: some View {
-        VStack {
-            Image(systemName: "stethoscope")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Blockchain With IOMT")
-            
-            Button(action: startBackgroundTask) {
-                Text(isRunning ? "Stop" : "Start")
+class HeartRateStreamManager: ObservableObject {
+    @Published var heartRate: Double = 0.0
+    private var cancellables = Set<AnyCancellable>()
+    private let healthStore = HKHealthStore()
+    
+    init() {
+        // Example: Create a publisher that fetches heart rate data periodically
+        Timer.publish(every: 1.0, on: .main, in: .common)
+            .autoconnect()
+            .sink { [weak self] _ in
+                self?.fetchLatestHeartRate()
             }
-            .padding()
-            .background(isRunning ? Color.gray : Color.blue)
-            .foregroundColor(.white)
-            .clipShape(Capsule())
-        }
-        .padding()
+            .store(in: &cancellables)
     }
     
-    private func startBackgroundTask() {
-        if isRunning {
-//            already in running state, stop button has been clicked
-            isRunning = false
+    private func fetchLatestHeartRate() {
+        // This is a simplified placeholder. In a real app, you would query HealthKit.
+        // Assume you get a new heart rate value from HealthKit.
+        let newHeartRate = Double.random(in: 60...100)
+        DispatchQueue.main.async {
+            self.heartRate = newHeartRate
+//            print("Updated Heart Rate: \(newHeartRate)")
         }
-        else {
-            isRunning = true
-        }
-        print("Process state: \(isRunning)")
-        // Background task logic will be implemented later
     }
 }
 
-#Preview {
-    ContentView()
+import SwiftUI
+
+struct ContentView: View {
+    @StateObject private var streamManager = HeartRateStreamManager()
+    
+    var body: some View {
+        VStack {
+            Text("Current Heart Rate: \(streamManager.heartRate, specifier: "%.0f") BPM")
+                .font(.headline)
+        }
+        .padding()
+    }
 }
