@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>WKWatchKitApp</key>
+	<true/>
+	<key>CFBundleExecutable</key>
+	<string>Vitals Watch App</string>
+	<key>CFBundleIdentifier</key>
+	<string>10455E2D-FC37-4A81-9CD3-458C5E9AD889</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1.0</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>This app needs access to health data.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>This app needs permission to monitor vitals in the background.</string>
+</dict>
+</plist>

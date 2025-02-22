@@ -7,43 +7,83 @@
 
 import Combine
 import HealthKit
+import SwiftUI
 
-class HeartRateStreamManager: ObservableObject {
+
+class VitalsStreamManager: ObservableObject {
     @Published var heartRate: Double = 0.0
+    @Published var bodyTemperature: Double = 0.0
+    @Published var bodyOxygenLevel: Double = 0.0
+    @Published var bloodPressure: String = "0/0"
+    
     private var cancellables = Set<AnyCancellable>()
     private let healthStore = HKHealthStore()
     
     init() {
-        // Example: Create a publisher that fetches heart rate data periodically
         Timer.publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
-                self?.fetchLatestHeartRate()
+                self?.fetchLatestVitals()
             }
             .store(in: &cancellables)
     }
     
-    private func fetchLatestHeartRate() {
-        // This is a simplified placeholder. In a real app, you would query HealthKit.
-        // Assume you get a new heart rate value from HealthKit.
+    private func fetchLatestVitals() {
         let newHeartRate = Double.random(in: 60...100)
+        let newBodyTemperature = Double.random(in: 97...106)
+        let newBloodPressure = String(format: "%.0f", Double.random(in: 60...130)) + "/" + String(format: "%.0f", Double.random(in: 100...400))
+        let newBodyOxygenLevel = Double.random(in: 80...100)
         DispatchQueue.main.async {
             self.heartRate = newHeartRate
-//            print("Updated Heart Rate: \(newHeartRate)")
+            self.bodyTemperature = newBodyTemperature
+            self.bloodPressure = newBloodPressure
+            self.bodyOxygenLevel = newBodyOxygenLevel
         }
     }
 }
 
-import SwiftUI
-
 struct ContentView: View {
-    @StateObject private var streamManager = HeartRateStreamManager()
-    
+    @StateObject private var streamManager = VitalsStreamManager()
+    let columns: [GridItem] = [
+            GridItem(.flexible()),
+            GridItem(.flexible())
+        ]
     var body: some View {
-        VStack {
-            Text("Current Heart Rate: \(streamManager.heartRate, specifier: "%.0f") BPM")
-                .font(.headline)
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 20) {
+                    VStack(alignment: .leading) {
+                        Text("HR(BPM)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("\(streamManager.heartRate, specifier: "%.0f")")
+                            .font(.headline)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("BT(°F)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("\(streamManager.bodyTemperature, specifier: "%.0f")")
+                            .font(.headline)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("BP(mmHg)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(streamManager.bloodPressure)
+                            .font(.headline)
+                    }
+                    
+                    VStack(alignment: .leading) {
+                        Text("SpO2(%)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("\(streamManager.bodyOxygenLevel, specifier: "%.0f")")
+                            .font(.headline)
+                    }
+                }
+                .padding()
+            }
         }
-        .padding()
-    }
 }
