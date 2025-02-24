@@ -8,6 +8,7 @@
 import Combine
 import HealthKit
 import SwiftUI
+import UserNotifications
 
 
 class VitalsStreamManager: ObservableObject {
@@ -40,6 +41,33 @@ class VitalsStreamManager: ObservableObject {
             self.bodyOxygenLevel = newBodyOxygenLevel
         }
     }
+    func sendDataToBlockchain() {
+            BlockchainManager.shared.submitVitalsData(
+                bloodPressure: bloodPressure,
+                spo2: Int(bodyOxygenLevel),
+                bodyTemperature: Int(bodyTemperature),
+                heartRate: Int(heartRate)
+            )
+        }
+    
+    func scheduleNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "Blockchain Update"
+        content.body = "Vitals pushed to the blockchain."
+        content.sound = .default
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false)
+        
+        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
+        
+        // Schedule the notification.
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error scheduling notification: \(error.localizedDescription)")
+            }
+        }
+    }
+
 }
 
 struct ContentView: View {
@@ -85,5 +113,14 @@ struct ContentView: View {
                 }
                 .padding()
             }
+        Button("Push to Blockchain") {
+                streamManager.sendDataToBlockchain()
+            }
+            .font(.caption)
+            .padding(.vertical, 6)
+            .padding(.horizontal, 12)
+            .background(Color.red)
+            .foregroundColor(.white)
+            .clipShape(Capsule())
         }
 }
