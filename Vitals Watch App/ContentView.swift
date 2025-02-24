@@ -48,25 +48,10 @@ class VitalsStreamManager: ObservableObject {
                 bodyTemperature: Int(bodyTemperature),
                 heartRate: Int(heartRate)
             )
+//        TODO: add simple logic to notify the user
+//        if check ...
+        NotificationManager.shared.scheduleNotification()
         }
-    
-    func scheduleNotification() {
-        let content = UNMutableNotificationContent()
-        content.title = "Blockchain Update"
-        content.body = "Vitals pushed to the blockchain."
-        content.sound = .default
-        
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 2, repeats: false)
-        
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: trigger)
-        
-        // Schedule the notification.
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("Error scheduling notification: \(error.localizedDescription)")
-            }
-        }
-    }
 
 }
 
@@ -119,8 +104,8 @@ struct ContentView: View {
                 streamManager.sendDataToBlockchain()
             }
             .font(.caption)
-            .padding(.vertical, 6)
-            .padding(.horizontal, 12)
+            .padding(.vertical, -4)
+            .padding(.horizontal, 8)
             .background(Color.red)
             .foregroundColor(.white)
             .clipShape(Capsule())

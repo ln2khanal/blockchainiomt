@@ -5,7 +5,7 @@ import CryptoKit
 class Block {
     var index: Int
     var timestamp: Date
-    var transactions: [String] // Here we store transaction strings
+    var transactions: [String]
     var previousHash: String
     var hash: String
     var nonce: Int
@@ -22,20 +22,17 @@ class Block {
 
     /// Computes the hash using SHA256 over the block’s contents.
     func computeHash() -> String {
-        // Create a string that includes all block properties.
         let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(transactions.joined())\(previousHash)\(nonce)"
         // Compute SHA256 hash of the block string.
         let hashData = SHA256.hash(data: Data(blockString.utf8))
-        // Convert hash data to a hex string.
         return hashData.compactMap { String(format: "%02x", $0) }.joined()
     }
 }
 
-// MARK: - Blockchain
 class Blockchain {
     var chain: [Block]
-    var pendingTransactions: [String] // Stores transaction data strings
-    let difficulty: Int = 2 // Proof-of-work difficulty level
+    var pendingTransactions: [String]
+    let difficulty: Int = 2
 
     init() {
         // Create genesis block and add it to the chain
@@ -62,7 +59,6 @@ class Blockchain {
         pendingTransactions = ["Reward to \(minerAddress)"]
     }
 
-    /// Performs proof-of-work by adjusting the nonce until the hash starts with the required prefix.
     func proofOfWork(block: Block) {
         let targetPrefix = String(repeating: "0", count: difficulty)
         while !block.hash.hasPrefix(targetPrefix) {
@@ -72,47 +68,15 @@ class Blockchain {
     }
 }
 
-// MARK: - SmartContract (Placeholder Implementation)
+
 class SmartContract {
     func execute() {
         print("Executing smart contract logic")
     }
 }
 
-// MARK: - Blockchain Network (Placeholder Implementation)
 class BlockchainNetwork {
     func synchronize() {
         print("Synchronizing blockchain network")
     }
 }
-//
-//// MARK: - Blockchain Application
-//class BlockchainApp {
-//    func run() {
-//        print("Initiating blockchain")
-//        let blockchain = Blockchain()
-//
-//        // Insert the vitals data as a transaction:
-//        let vitalsData = """
-//        Blood Pressure: 90/120,
-//        SPO3: 98%,
-//        Body Temperature: 99 F,
-//        Heart Rate: 72
-//        """
-//        blockchain.pendingTransactions.append(vitalsData)
-//
-//        // Optionally, add any other transactions here.
-//        blockchain.minePendingTransactions(minerAddress: "Miner1")
-//
-//        print("Iterating through blockchain:")
-//        for block in blockchain.chain {
-//            print("Block #\(block.index)")
-//            print("Timestamp: \(block.timestamp)")
-//            print("Transactions: \(block.transactions)")
-//            print("Previous Hash: \(block.previousHash)")
-//            print("Hash: \(block.hash)")
-//            print("Nonce: \(block.nonce)")
-//            print("--------------")
-//        }
-//    }
-//}
