@@ -77,6 +77,7 @@ struct ContentView: View {
             GridItem(.flexible())
         ]
     var body: some View {
+        VStack {
             ScrollView {
                 LazyVGrid(columns: columns, spacing: 20) {
                     VStack(alignment: .leading) {
@@ -113,7 +114,8 @@ struct ContentView: View {
                 }
                 .padding()
             }
-        Button("Push to Blockchain") {
+            
+            Button("Push to Blockchain") {
                 streamManager.sendDataToBlockchain()
             }
             .font(.caption)
@@ -123,4 +125,8 @@ struct ContentView: View {
             .foregroundColor(.white)
             .clipShape(Capsule())
         }
+        .onAppear {
+            requestNotificationPermission()
+        }
+    }
 }
