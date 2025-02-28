@@ -74,9 +74,3 @@ class SmartContract {
         print("Executing smart contract logic")
     }
 }
-
-class BlockchainNetwork {
-    func synchronize() {
-        print("Synchronizing blockchain network")
-    }
-}

@@ -13,7 +13,7 @@ class NotificationManager {
     
     private init() {}
     
-    func scheduleNotification() {
+    func scheduleNotification(addedBlock: Block) {
         let content = UNMutableNotificationContent()
         content.title = "Blockchain Update"
         content.body = "Vitals pushed to the blockchain."

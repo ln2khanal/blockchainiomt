@@ -6,7 +6,6 @@
 //
 
 import Foundation
-
 class BlockchainManager: ObservableObject {
     static let shared = BlockchainManager()
     private var blockchain: Blockchain
@@ -16,18 +15,20 @@ class BlockchainManager: ObservableObject {
     }
 
     /// Appends vitals data as a new transaction and mines a new block.
-    func submitVitalsData(bloodPressure: String, spo2: Int, bodyTemperature: Int, heartRate: Int, miner: String = "Miner1") {
+    func submitVitalsData(bloodPressure: String, spo2: Double, bodyTemperature: Double, heartRate: Double, miner: String = "IOMT-Watch") -> Block {
         let vitalsData = """
         Blood Pressure: \(bloodPressure),
         SpO2: \(spo2)%,
-        Body Temperature: \(bodyTemperature) F,
+        Body Temperature: \(bodyTemperature) °F,
         Heart Rate: \(heartRate)
         """
         blockchain.pendingTransactions.append(vitalsData)
         blockchain.minePendingTransactions(minerAddress: miner)
-        print("New block added with data:")
-        for block in blockchain.chain {
-            print("Block #\(block.index) -> Hash: \(block.hash)")
-        }
+        
+        let addedBlock = blockchain.chain.last!
+        
+        print("\nNew block added with data:\n---\n\(vitalsData)\nHash: \(addedBlock.hash)\n---Total Blocks: \(blockchain.chain.count)\n")
+        
+        return addedBlock
     }
 }
