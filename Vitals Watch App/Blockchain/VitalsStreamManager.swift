@@ -22,16 +22,18 @@ class VitalsStreamManager: ObservableObject {
         Timer.publish(every: 1.0, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
-                self?.fetchLatestVitals()
+                self?.updateLatestVitals()
             }
             .store(in: &cancellables)
     }
     
-    private func fetchLatestVitals() {
+    private func updateLatestVitals() {
         let newHeartRate = Double.random(in: 60...100)
         let newBodyTemperature = Double.random(in: 97...106)
         let newBloodPressure = String(format: "%.0f", Double.random(in: 60...130)) + "/" + String(format: "%.0f", Double.random(in: 100...400))
         let newBodyOxygenLevel = Double.random(in: 80...100)
+         
+        var peers = ["127.0.0.1:3000"]
         
         DispatchQueue.main.async {
             self.heartRate = newHeartRate
@@ -49,7 +51,7 @@ class VitalsStreamManager: ObservableObject {
         )
 
         Task {
-            await BlockchainNetwork(peers: ["127.0.0.1:3000"]).shareBlock(block: addedBlock)
+            await BlockchainNetwork(peers: peers).shareBlock(block: addedBlock)
         }
         
         NotificationManager.shared.scheduleNotification(addedBlock: addedBlock)
