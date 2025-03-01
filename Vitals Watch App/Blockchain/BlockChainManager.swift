@@ -15,7 +15,7 @@ class BlockchainManager: ObservableObject {
     }
 
     /// Appends vitals data as a new transaction and mines a new block.
-    func submitVitalsData(bloodPressure: String, spo2: Double, bodyTemperature: Double, heartRate: Double, miner: String = "IOMT-Watch") -> Block {
+    func submitVitalsData(bloodPressure: String, spo2: Double, bodyTemperature: Double, heartRate: Double, miner: String) -> Block {
         let vitalsData = """
         Blood Pressure: \(bloodPressure),
         SpO2: \(spo2)%,

@@ -44,7 +44,8 @@ class VitalsStreamManager: ObservableObject {
             bloodPressure: self.bloodPressure,
             spo2: self.bodyOxygenLevel,
             bodyTemperature: self.bodyTemperature,
-            heartRate: self.heartRate
+            heartRate: self.heartRate,
+            miner: "IOMT-Watch"
         )
 
         Task {
