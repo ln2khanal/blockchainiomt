@@ -10,6 +10,7 @@ import SwiftUI
 
 struct ContentView: View {
     @StateObject private var streamManager = VitalsStreamManager()
+    private let peerServer = PeerReceiverServer()
     let columns: [GridItem] = [
             GridItem(.flexible()),
             GridItem(.flexible())
@@ -65,6 +66,9 @@ struct ContentView: View {
         }
         .onAppear {
             requestNotificationPermission()
+            
+//            start the peer receiver server
+            peerServer.startServer()
         }
     }
 }

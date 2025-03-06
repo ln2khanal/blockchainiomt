@@ -27,7 +27,7 @@ class BlockchainManager: ObservableObject {
         
         let addedBlock = blockchain.chain.last!
         
-        print("\nNew block added with data:\n---\n\(vitalsData)\nHash: \(addedBlock.hash)\n---Total Blocks: \(blockchain.chain.count)\n")
+//        print("\nNew block added with data:\n---\n\(vitalsData)\nHash: \(addedBlock.hash)\n---Total Blocks: \(blockchain.chain.count)\n")
         
         return addedBlock
     }

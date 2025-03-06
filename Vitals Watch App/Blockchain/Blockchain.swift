@@ -20,7 +20,6 @@ class Block {
         self.hash = computeHash()
     }
 
-    /// Computes the hash using SHA256 over the block’s contents.
     func computeHash() -> String {
         let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(transactions.joined())\(previousHash)\(nonce)"
         // Compute SHA256 hash of the block string.

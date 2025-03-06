@@ -16,15 +16,21 @@ class VitalsStreamManager: ObservableObject {
     @Published var bloodPressure: String = "0/0"
     
     private var cancellables = Set<AnyCancellable>()
-    private let healthStore = HKHealthStore()
+    private var cpuMemoryTimer: Timer?
     
     init() {
-        Timer.publish(every: 1.0, on: .main, in: .common)
+        Timer.publish(every: 1, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.updateLatestVitals()
             }
             .store(in: &cancellables)
+        
+        print("File Path:\(getUsageFilePath().absoluteString)\n")
+        
+        cpuMemoryTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            appendRecordToJsonFile(memoryInfo: getMemoryUsage(), cpuUsage: getCPUUsage())
+        }
     }
     
     private func updateLatestVitals() {

@@ -8,7 +8,7 @@ class BlockchainNetwork {
     }
 
     func shareBlock(block: Block) async -> Bool {
-        print("Sharing block with index \(block.index) to peers \(peers)")
+//        print("Sharing block with index \(block.index) to peers \(peers)")
         var success = false
 
         for peer in peers {
