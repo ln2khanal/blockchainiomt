@@ -24,7 +24,7 @@ class VitalsStreamManager: ObservableObject {
     private var cpuMemoryTimer: Timer?
     
     init() {
-        Timer.publish(every: 1, on: .main, in: .common)
+        Timer.publish(every: 5, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.startStreamingVitals()
@@ -32,8 +32,9 @@ class VitalsStreamManager: ObservableObject {
             .store(in: &cancellables)
         
         print("File Path:\(getUsageFilePath().absoluteString)\n")
+        print("Device ID:\(getPersistentDeviceID())")
         
-        cpuMemoryTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+        cpuMemoryTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
             appendRecordToJsonFile(memoryInfo: getMemoryUsage(), cpuUsage: getCPUUsage())
         }
     }
@@ -126,7 +127,8 @@ class VitalsStreamManager: ObservableObject {
             spo2: self.bodyOxygenLevel,
             bodyTemperature: self.bodyTemperature,
             heartRate: self.heartRate,
-            miner: "IOMT-Watch"
+            miner: "IOMT-Watch",
+            patiendIdentifier: getPersistentDeviceID()
         )
 
         Task {

@@ -9,19 +9,21 @@ class Block {
     var previousHash: String
     var hash: String
     var nonce: Int
+    var data: String
 
-    init(index: Int, transactions: [String], previousHash: String) {
+    init(index: Int, transactions: [String], previousHash: String, data: String) {
         self.index = index
         self.timestamp = Date()
         self.transactions = transactions
         self.previousHash = previousHash
         self.nonce = 0
         self.hash = ""
+        self.data = data
         self.hash = computeHash()
     }
 
     func computeHash() -> String {
-        let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(transactions.joined())\(previousHash)\(nonce)"
+        let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(transactions.joined())\(previousHash)\(nonce)\(data)"
         // Compute SHA256 hash of the block string.
         let hashData = SHA256.hash(data: Data(blockString.utf8))
         return hashData.compactMap { String(format: "%02x", $0) }.joined()
@@ -32,10 +34,11 @@ class Blockchain {
     var chain: [Block]
     var pendingTransactions: [String]
     let difficulty: Int = 2
+    var data: String = ""
 
     init() {
         // Create genesis block and add it to the chain
-        self.chain = [Block(index: 0, transactions: ["Genesis Block"], previousHash: "0")]
+        self.chain = [Block(index: 0, transactions: ["Genesis Block"], previousHash: "0", data: data)]
         self.pendingTransactions = []
     }
 
@@ -51,7 +54,7 @@ class Blockchain {
 
     func minePendingTransactions(minerAddress: String) {
         // Create a new block with all pending transactions
-        let block = Block(index: chain.count, transactions: pendingTransactions, previousHash: getLatestBlock().hash)
+        let block = Block(index: chain.count, transactions: pendingTransactions, previousHash: getLatestBlock().hash, data: data)
         proofOfWork(block: block)
         chain.append(block)
         // Reset pending transactions with a miner reward transaction.

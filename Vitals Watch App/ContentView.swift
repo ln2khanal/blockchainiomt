@@ -53,15 +53,15 @@ struct ContentView: View {
                     .padding()
                 }
                 
-                NavigationLink(destination: SettingsView()) {
-                    Text("Settings")
-                        .font(.caption)
-                        .padding(.vertical, 4)
-                        .padding(.horizontal, 8)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .clipShape(Capsule())
-                }
+//                NavigationLink(destination: SettingsView()) {
+//                    Text("Settings")
+//                        .font(.caption)
+//                        .padding(.vertical, 4)
+//                        .padding(.horizontal, 8)
+//                        .background(Color.blue)
+//                        .foregroundColor(.white)
+//                        .clipShape(Capsule())
+//                }
                 .buttonStyle(.plain)
             }
             .navigationTitle("Vitals")
