@@ -31,12 +31,7 @@ class VitalsStreamManager: ObservableObject {
             }
             .store(in: &cancellables)
         
-        print("File Path:\(getUsageFilePath().absoluteString)\n")
         print("Device ID:\(getPersistentDeviceID())")
-        
-        cpuMemoryTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { _ in
-            appendRecordToJsonFile(memoryInfo: getMemoryUsage(), cpuUsage: getCPUUsage())
-        }
     }
     
     func startStreamingVitals() {
@@ -120,22 +115,22 @@ class VitalsStreamManager: ObservableObject {
     }
     
     func processVitalsData(){
-        let peers = ["127.0.0.1:3000"]
+        let patientID: String = getPersistentDeviceID()
         
-        let addedBlock = BlockchainManager.shared.submitVitalsData(
+        BlockchainManager.shared.addToMempool(
             bloodPressure: self.bloodPressure,
             spo2: self.bodyOxygenLevel,
             bodyTemperature: self.bodyTemperature,
             heartRate: self.heartRate,
-            miner: "IOMT-Watch",
-            patiendIdentifier: getPersistentDeviceID()
+            miner: "IOMT-Watch(\(patientID))",
+            patientIdentifier: patientID
         )
 
-        Task {
-            await BlockchainNetwork(peers: peers).shareBlock(block: addedBlock)
-        }
+//        Task {
+//            await BlockchainNetwork(peers: peers).shareBlock(block: addedBlock)
+//        }
         
-        NotificationManager.shared.scheduleNotification(addedBlock: addedBlock)
+//        NotificationManager.shared.scheduleNotification(addedBlock: addedBlock)
     }
 
 }

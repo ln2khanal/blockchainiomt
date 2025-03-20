@@ -12,7 +12,7 @@ struct SettingsView: View {
     @AppStorage("hashingAlgorithm") private var hashingAlgorithm: Int = 256
     @AppStorage("blockchainStorageScheme") private var blockchainStorageScheme: String = "Memory"
 
-    let hasingAlgorighms = [256, 512]
+    let hasingAlgorighms: [Int] = [256, 512]
     let storageSchemes: [String] = ["Memory", "Local", "External"]
 
     var body: some View {

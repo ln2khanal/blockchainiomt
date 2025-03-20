@@ -1,8 +1,20 @@
-
+import Foundation
 import Network
+import Combine
 
 class PeerReceiverServer {
     private var listener: NWListener?
+    private var blockchainManager: BlockchainManager
+    private var cancellables = Set<AnyCancellable>()
+
+    init(blockchainManager: BlockchainManager = BlockchainManager.shared) {
+        self.blockchainManager = blockchainManager
+        blockchainManager.$blockchain
+            .sink { [weak self] blockchain in
+                self?.handleBlockchainUpdate(blockchain)
+            }
+            .store(in: &cancellables)
+    }
 
     func startServer() {
         let parameters = NWParameters(tls: nil)
@@ -10,7 +22,7 @@ class PeerReceiverServer {
         parameters.includePeerToPeer = true
 
         let port: NWEndpoint.Port = 3001
-        
+
         guard let listener = try? NWListener(using: parameters, on: port) else {
             print("Failed to create listener")
             return
@@ -61,7 +73,11 @@ class PeerReceiverServer {
     }
 
     private func processRequest(_ request: String) -> String {
-        // Parse the HTTP request and generate a response
+
+        if request.contains("GET /merkle-tree") {
+            return generateMerkleTreeResponse()
+        }
+
         let responseBody = "Hello from watchOS!"
         return """
         HTTP/1.1 200 OK
@@ -71,4 +87,42 @@ class PeerReceiverServer {
         \(responseBody)
         """
     }
+
+    private func generateMerkleTreeResponse() -> String {
+        let allTransactions = blockchainManager.blockchain.chain.flatMap { block in
+            block.transactions.map { transaction in
+                if let jsonData = try? JSONEncoder().encode(transaction),
+                   let jsonString = String(data: jsonData, encoding: .utf8) {
+                    return jsonString
+                }
+                return ""
+            }
+        }.filter { !$0.isEmpty }
+
+        guard !allTransactions.isEmpty else {
+            return "HTTP/1.1 500 Internal Server Error\n\nNo transactions in blockchain"
+        }
+
+        let merkleTree = MerkleTree(transactions: allTransactions)
+
+        do {
+            let jsonData = try JSONEncoder().encode(merkleTree.getMerkleTree())
+            let jsonString = String(data: jsonData, encoding: .utf8) ?? "{}"
+
+            return """
+            HTTP/1.1 200 OK
+            Content-Type: application/json
+            Content-Length: \(jsonString.count)
+
+            \(jsonString)
+            """
+        } catch {
+            return "HTTP/1.1 500 Internal Server Error\n\nFailed to generate Merkle Tree"
+        }
+    }
+
+    private func handleBlockchainUpdate(_ blockchain: Blockchain) {
+        print("Blockchain updated, new block count: \(blockchain.chain.count)")
+    }
+
 }

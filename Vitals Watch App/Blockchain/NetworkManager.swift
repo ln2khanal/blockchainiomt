@@ -1,17 +1,13 @@
 import Foundation
 
 class BlockchainNetwork {
-    private var peers: [String]
-
-    init(peers: [String] = []) {
-        self.peers = peers
-    }
+    
+    private var networkPeers = ["127.0.0.1:3000"]
 
     func shareBlock(block: Block) async -> Bool {
-//        print("Sharing block with index \(block.index) to peers \(peers)")
         var success = false
 
-        for peer in peers {
+        for peer in networkPeers {
             let urlString = "http://\(peer)/receiveBlock"
             guard let url = URL(string: urlString) else {
                 print("Invalid peer URL: \(peer)")
@@ -34,7 +30,6 @@ class BlockchainNetwork {
         let blockData: [String: Any] = [
             "index": block.index,
             "timestamp": block.timestamp.timeIntervalSince1970,
-            "transactions": block.transactions,
             "previousHash": block.previousHash,
             "hash": block.hash,
             "nonce": block.nonce
