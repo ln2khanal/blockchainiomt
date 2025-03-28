@@ -36,7 +36,7 @@ class BlockchainManager: ObservableObject {
     }
 
     func processMempoolData() {
-        print("Length of Chain: \(blockchain.chain.count)")
+//        print("Length of Chain: \(blockchain.chain.count)")
         blockchain.processMempoolData()
     }
 }

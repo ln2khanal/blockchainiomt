@@ -95,8 +95,6 @@ class Blockchain {
     var chain: [Block]
     var pendingTransactions: [String]
     var mempool: [Transaction]
-    let difficulty: Int = 2
-    var data: String = ""
 
     init() {
         self.chain = [Block(index: 0, transactions: ["Genesis Block"], previousHash: "0")]
@@ -113,13 +111,6 @@ class Blockchain {
         chain.append(newBlock)
     }
 
-    func proofOfWork(block: Block) {
-        let targetPrefix = String(repeating: "0", count: difficulty)
-        while !block.hash.hasPrefix(targetPrefix) {
-            block.nonce += 1
-        }
-    }
-    
     func addToMempool(transaction: Transaction) {
         mempool.append(transaction)
     }
@@ -129,9 +120,11 @@ class Blockchain {
             let mempoolCopy = mempool
             mempool.removeAll()
             
-            let transactions = mempoolCopy.map { $0.toString() }
+            let transactions = mempoolCopy.map { $0.toString() } + [SmartContract.evaluate(mempoolCopy)]
             let block = Block(index: chain.count, transactions: transactions, previousHash: getLatestBlock().hash)
-            proofOfWork(block: block)
+            
+            ProofOfWork().validate(block: block)
+            
             chain.append(block)
             
             Task {
