@@ -13,7 +13,6 @@ class BlockchainManager: ObservableObject {
 
     func startPeriodicProcessing() {
         processingTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
-            print("Processing mempool data...\n\n")
             self.processMempoolData()
         }
     }
@@ -36,7 +35,6 @@ class BlockchainManager: ObservableObject {
     }
 
     func processMempoolData() {
-//        print("Length of Chain: \(blockchain.chain.count)")
         blockchain.processMempoolData()
     }
 }

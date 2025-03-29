@@ -89,6 +89,40 @@ class Block {
         let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(previousHash)\(nonce)\(transactions.joined())\(merkleRoot)"
         return hashData(blockString, algorithm: hashingAlgorithm)
     }
+    
+    func toString() -> String {
+        let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(previousHash)\(nonce)\(transactions.joined())\(merkleRoot)"
+        
+        return blockString
+    }
+    
+    func estimatedSizeInBytes() -> Int {
+            let indexSize = MemoryLayout.size(ofValue: index) // 8 bytes
+            let timestampSize = MemoryLayout.size(ofValue: timestamp) // 8 bytes
+            let nonceSize = MemoryLayout.size(ofValue: nonce) // 8 bytes
+            let hashingAlgoSize = MemoryLayout.size(ofValue: hashingAlgorithm) // 8 bytes (if counted)
+
+            let previousHashSize = previousHash.utf8.count
+            let merkleRootSize = merkleRoot.utf8.count
+            
+            // Total transaction strings size
+            let transactionsSize = transactions.reduce(0) { $0 + $1.utf8.count }
+
+            // Array overhead (pointer + capacity)
+            let transactionArrayOverhead = transactions.count * MemoryLayout<String>.stride
+
+            // Total estimated size
+            let total = indexSize
+                      + timestampSize
+                      + nonceSize
+                      + hashingAlgoSize
+                      + previousHashSize
+                      + merkleRootSize
+                      + transactionsSize
+                      + transactionArrayOverhead
+
+            return total
+        }
 }
 
 class Blockchain {
@@ -125,18 +159,32 @@ class Blockchain {
             
             ProofOfWork().validate(block: block)
             
-            chain.append(block)
-            
             Task {
-                await BlockchainNetwork().shareBlock(block: block)
-//                if fails, restore the transactions
+                validateBlockWithNetwork(block: block) { isValid in
+                    if isValid {
+                        print("Block is valid!")
+                    } else {
+                        print("Block is invalid.")
+                    }
+                }
             }
-            
-            
         } else {
             print("No transactions in the mempool to process.")
         }
     }
+    
+    func validateBlockWithNetwork(block: Block, completion: @escaping (Bool) -> Void) {
+        PeerClient.shared.send(message: block.toString(), action: "validate") { response in
+            if let response = response {
+                completion(response == "Valid")
+            } else {
+                print("Failed to receive response")
+                completion(false)
+            }
+        }
+    }
+
+
     
 }
 
