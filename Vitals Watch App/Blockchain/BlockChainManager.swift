@@ -12,7 +12,7 @@ class BlockchainManager: ObservableObject {
     }
 
     func startPeriodicProcessing() {
-        processingTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { _ in
+        processingTimer = Timer.scheduledTimer(withTimeInterval: 8.0, repeats: true) { _ in
             self.processMempoolData()
         }
     }

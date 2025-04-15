@@ -24,7 +24,7 @@ class VitalsStreamManager: ObservableObject {
     private var cpuMemoryTimer: Timer?
     
     init() {
-        Timer.publish(every: 20, on: .main, in: .common)
+        Timer.publish(every: 5, on: .main, in: .common)
             .autoconnect()
             .sink { [weak self] _ in
                 self?.startStreamingVitals()

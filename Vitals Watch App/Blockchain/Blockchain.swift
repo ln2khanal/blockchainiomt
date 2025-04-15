@@ -59,81 +59,20 @@ class MerkleTree {
     }
 }
 
-
-class Block {
-    var index: Int
-    var timestamp: Date
-    var previousHash: String
-    var nonce: Int
-    var transactions: [String]
-    var merkleRoot: String
-    
-    var hash: String {
-        computeHash()
-    }
-    
-    @AppStorage("hashingAlgorithm") private var hashingAlgorithm: Int = 256
-    
-    init(index: Int, transactions: [String], previousHash: String) {
-        self.index = index
-        self.timestamp = Date()
-        self.previousHash = previousHash
-        self.nonce = 0
-        self.transactions = transactions
-        
-        let merkleTree = MerkleTree(transactions: transactions)
-        self.merkleRoot = merkleTree.root ?? ""
-    }
-
-    func computeHash() -> String {
-        let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(previousHash)\(nonce)\(transactions.joined())\(merkleRoot)"
-        return hashData(blockString, algorithm: hashingAlgorithm)
-    }
-    
-    func toString() -> String {
-        let blockString = "\(index)\(timestamp.timeIntervalSince1970)\(previousHash)\(nonce)\(transactions.joined())\(merkleRoot)"
-        
-        return blockString
-    }
-    
-    func estimatedSizeInBytes() -> Int {
-            let indexSize = MemoryLayout.size(ofValue: index) // 8 bytes
-            let timestampSize = MemoryLayout.size(ofValue: timestamp) // 8 bytes
-            let nonceSize = MemoryLayout.size(ofValue: nonce) // 8 bytes
-            let hashingAlgoSize = MemoryLayout.size(ofValue: hashingAlgorithm) // 8 bytes (if counted)
-
-            let previousHashSize = previousHash.utf8.count
-            let merkleRootSize = merkleRoot.utf8.count
-            
-            // Total transaction strings size
-            let transactionsSize = transactions.reduce(0) { $0 + $1.utf8.count }
-
-            // Array overhead (pointer + capacity)
-            let transactionArrayOverhead = transactions.count * MemoryLayout<String>.stride
-
-            // Total estimated size
-            let total = indexSize
-                      + timestampSize
-                      + nonceSize
-                      + hashingAlgoSize
-                      + previousHashSize
-                      + merkleRootSize
-                      + transactionsSize
-                      + transactionArrayOverhead
-
-            return total
-        }
-}
-
 class Blockchain {
     var chain: [Block]
     var pendingTransactions: [String]
     var mempool: [Transaction]
-
+    var pendingBlocks: [String: (block: Block, approvals: Int, rejections: Int)] = [:]
+    static let requiredThreshold: Int = 1
+    
     init() {
         self.chain = [Block(index: 0, transactions: ["Genesis Block"], previousHash: "0")]
         self.pendingTransactions = []
         self.mempool = [] // Initialize the mempool
+        PeerClient.shared.onValidationResponse = { [weak self] blockHash, isValid in
+                self?.handlePeerValidationResponse(for: blockHash, isValid: isValid)
+            }
     }
 
     func getLatestBlock() -> Block {
@@ -148,6 +87,28 @@ class Blockchain {
     func addToMempool(transaction: Transaction) {
         mempool.append(transaction)
     }
+    
+    func handlePeerValidationResponse(for blockHash: String, isValid: Bool) {
+        guard var record = pendingBlocks[blockHash] else { return }
+
+        if isValid {
+            record.approvals += 1
+        } else {
+            record.rejections += 1
+        }
+
+        pendingBlocks[blockHash] = record
+
+        if record.approvals >= Blockchain.requiredThreshold {
+            chain.append(record.block)
+            pendingBlocks.removeValue(forKey: blockHash)
+            print("Block added to chain.")
+            PeerClient.shared.send(message: record.block.toDict(), action: "syncBlockchain")
+        } else if record.rejections >= Blockchain.requiredThreshold {
+            pendingBlocks.removeValue(forKey: blockHash)
+            print("Block rejected by peers.")
+        }
+    }
 
     func processMempoolData() {
         if !mempool.isEmpty {
@@ -158,33 +119,13 @@ class Blockchain {
             let block = Block(index: chain.count, transactions: transactions, previousHash: getLatestBlock().hash)
             
             ProofOfWork().validate(block: block)
-            
             Task {
-                validateBlockWithNetwork(block: block) { isValid in
-                    if isValid {
-                        print("Block is valid!")
-                    } else {
-                        print("Block is invalid.")
-                    }
-                }
-            }
-        } else {
-            print("No transactions in the mempool to process.")
-        }
-    }
-    
-    func validateBlockWithNetwork(block: Block, completion: @escaping (Bool) -> Void) {
-        PeerClient.shared.send(message: block.toString(), action: "validate") { response in
-            if let response = response {
-                completion(response == "Valid")
-            } else {
-                print("Failed to receive response")
-                completion(false)
+                pendingBlocks[block.hash] = (block, 0, 0)
+                print("Broadcasting block\(block.hash) to network for validation...\n")
+                PeerClient.shared.send(message: block.toDict(), action: "validateBlock")
             }
         }
     }
-
-
     
 }
 
